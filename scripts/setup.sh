@@ -1,4 +1,3 @@
-
 mkdir -p ../data
 
 echo Loading bert-nmt
@@ -29,9 +28,9 @@ echo Loading wi+locness
 wget -P ../data https://www.cl.cam.ac.uk/research/nl/bea2019st/data/wi+locness_v2.1.bea19.tar.gz
 tar -xzvf ../data/wi+locness_v2.1.bea19.tar.gz -C ../data
 
-python -u convert_m2_to_parallel.py ../data/wi+locness/m2/ABC.train.gold.bea19.m2 ../data/train.src .    ./data/train.trg
-python -u convert_m2_to_parallel.py ../data/wi+locness/m2/ABCN.dev.gold.bea19.m2 ../data/valid.src ..    /data/valid.trg
-python -u convert_m2_to_parallel.py ../data/wi+locness/m2/ABCN.dev.gold.bea19.m2 ../data/test.src ../    data/test.trg
+python3 -u convert_m2_to_parallel.py ../data/wi+locness/m2/ABC.train.gold.bea19.m2 ../data/bea19.train.src ../data/bea19.train.trg
+python3 -u convert_m2_to_parallel.py ../data/wi+locness/m2/ABCN.dev.gold.bea19.m2 ../data/bea19.valid.src ../data/bea19.valid.trg
+python3 -u convert_m2_to_parallel.py ../data/wi+locness/m2/ABCN.dev.gold.bea19.m2 ../data/bea19.test.src ../data/bea19.test.trg
 
 echo Loading pre-trained model
 mkdir -p ../pretrained

@@ -1,0 +1,6 @@
+[submodule "bert-nmt"]
+	path = bert-nmt
+	url = https://github.com/bert-nmt/bert-nmt.git
+[submodule "gec-pseudodata"]
+	path = gec-pseudodata
+	url = https://github.com/butsugiri/gec-pseudodata.git

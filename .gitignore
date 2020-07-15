@@ -127,3 +127,11 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+process/
+model/
+bert-base-cased/
+data/
+gec-pseudodata/
+pseudo_model/
+pretrained/

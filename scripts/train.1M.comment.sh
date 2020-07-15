@@ -2,7 +2,7 @@ bert_type=bert-base-cased
 seed=2222
 gec_model=../pseudo_model/ldc_giga.spell_error.pretrain.checkpoint_last.pt
 bert_model=../bert-base-cased
-experiment=test
+experiment=comment
 
 SUBWORD_NMT=../subword
 FAIRSEQ_DIR=../bert-nmt
@@ -14,8 +14,8 @@ MODEL_DIR=../model/$bert_type/$experiment
 
 pre_trained_model=../pretrained/ldc_giga.spell_error.pretrain.checkpoint_last.pt
 
-train_src=$DATA_DIR/dropna.1K.src
-train_trg=$DATA_DIR/dropna.1K.trg
+train_src=$DATA_DIR/dropna.1M.src
+train_trg=$DATA_DIR/dropna.1M.trg
 valid_src=$DATA_DIR/dropna.1K.src
 valid_trg=$DATA_DIR/dropna.1K.trg
 test_src=$DATA_DIR/dropna.1K.src
@@ -84,4 +84,5 @@ CUDA_VISIBLE_DEVICES=0 python3 -u $FAIRSEQ_DIR/train.py $PROCESSED_DIR/bin \
     --reset-meters \
     --reset-dataloader \
     --save-interval-updates 5000 \
+    --fp16 \
     --seed $seed

@@ -3,6 +3,7 @@ seed=2222
 gec_model=../pseudo_model/ldc_giga.spell_error.pretrain.checkpoint_last.pt
 bert_model=../bert-base-cased
 experiment=nocomment
+n_epochs=10
 
 SUBWORD_NMT=../subword
 FAIRSEQ_DIR=../bert-nmt
@@ -76,7 +77,7 @@ CUDA_VISIBLE_DEVICES=0 python3 -u $FAIRSEQ_DIR/train.py $PROCESSED_DIR/bin \
     --clip-norm 1.0 \
     --criterion label_smoothed_cross_entropy \
     --label-smoothing 0.1 \
-    --max-epoch 2 \
+    --max-epoch $n_epochs \
     --adam-betas '(0.9,0.98)' \
     --log-format simple \
     --reset-lr-scheduler \

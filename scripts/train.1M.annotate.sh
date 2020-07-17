@@ -4,9 +4,8 @@ bert_type=bert-base-cased
 seed=2222
 gec_model=../pseudo_model/ldc_giga.spell_error.pretrain.checkpoint_last.pt
 bert_model=../bert-base-cased
-experiment=comment
-n_epochs=10
-checkpoint=checkpoint6
+experiment=annotate
+checkpoint=checkpoint_pretrain
 
 SUBWORD_NMT=../subword
 FAIRSEQ_DIR=../bert-nmt
@@ -19,12 +18,12 @@ LOG_DIR=../model/$bert_type/$experiment/logs
 
 pre_trained_model=../pretrained/ldc_giga.spell_error.pretrain.checkpoint_last.pt
 
-train_src=$DATA_DIR/dropna.1M.src
-train_trg=$DATA_DIR/dropna.1M.trg
-valid_src=$DATA_DIR/dropna.1K.src
-valid_trg=$DATA_DIR/dropna.1K.trg
-test_src=$DATA_DIR/dropna.1K.src
-test_trg=$DATA_DIR/dropna.1K.trg
+train_src=$DATA_DIR/dropna.1M.comment.src
+train_trg=$DATA_DIR/dropna.1M.comment.com
+valid_src=$DATA_DIR/dropna.1K.comment.src
+valid_trg=$DATA_DIR/dropna.1K.comment.com
+test_src=$DATA_DIR/dropna.1K.comment.src
+test_trg=$DATA_DIR/dropna.1K.comment.com
 
 cpu_num=`grep -c ^processor /proc/cpuinfo`
 
@@ -59,11 +58,14 @@ fi
 
 mkdir -p $MODEL_DIR
 
-cp $pre_trained_model $MODEL_DIR/checkpoint_pretrain.pt
+if [ ! -e "$MODEL_DIR/checkpoint_pretrain.pt" ]; then
+	echo "Copying pretrain file..."
+	cp $pre_trained_model $MODEL_DIR/checkpoint_pretrain.pt
+fi
 
-CUDA_VISIBLE_DEVICES=0 python3 -u $FAIRSEQ_DIR/train.py $PROCESSED_DIR/bin \
-    --save-dir $MODEL_DIR \
+CUDA_VISIBLE_DEVICES=0,1 python3 -u $FAIRSEQ_DIR/train.py $PROCESSED_DIR/bin \
     --tensorboard-logdir $LOG_DIR \
+    --save-dir $MODEL_DIR \
     --arch transformer_s2_vaswani_wmt_en_de_big \
     --max-tokens 4096 \
     --optimizer adam \
@@ -74,16 +76,21 @@ CUDA_VISIBLE_DEVICES=0 python3 -u $FAIRSEQ_DIR/train.py $PROCESSED_DIR/bin \
     --lr-scheduler reduce_lr_on_plateau \
     --lr-shrink 0.7 \
     --min-lr 1e-06 \
-    --restore-file $checkpoint.pt \
+    --warmup-from-nmt \
+    --warmup-nmt-file $checkpoint.pt \
     --bert-model-name $bert_model \
     --encoder-bert-dropout \
     --encoder-bert-dropout-ratio 0.3 \
     --clip-norm 1.0 \
     --criterion label_smoothed_cross_entropy \
     --label-smoothing 0.1 \
-    --max-epoch $n_epochs \
+    --max-epoch 6 \
     --adam-betas '(0.9,0.98)' \
     --log-format simple \
     --save-interval-updates 5000 \
-    --fp16 \
-    --seed $seed
+    --seed $seed \
+    --reset-lr-scheduler \
+    --reset-optimizer \
+    --reset-meters \
+    --reset-dataloader \
+

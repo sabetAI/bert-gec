@@ -84,14 +84,13 @@ CUDA_VISIBLE_DEVICES=0,1 python3 -u $FAIRSEQ_DIR/train.py $PROCESSED_DIR/bin \
     --clip-norm 1.0 \
     --criterion label_smoothed_cross_entropy \
     --label-smoothing 0.1 \
-    --max-epoch 2 \
+    --max-epoch 1 \
     --adam-betas '(0.9,0.98)' \
     --log-format simple \
-    --save-interval-updates 5000 \
+    --save-interval-updates 1000 \
     --fp16 \
     --seed $seed \
     --reset-lr-scheduler \
     --reset-optimizer \
     --reset-meters \
-    --reset-dataloader \
-
+    --reset-dataloader

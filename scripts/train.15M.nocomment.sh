@@ -1,11 +1,9 @@
-#!/bin/bash
-
 bert_type=bert-base-cased
 seed=2222
 gec_model=../pseudo_model/ldc_giga.spell_error.pretrain.checkpoint_last.pt
 bert_model=../bert-base-cased
-experiment=annotate
-checkpoint=checkpoint_pretrain
+experiment=nocomment
+epochs=5
 
 SUBWORD_NMT=../subword
 FAIRSEQ_DIR=../bert-nmt
@@ -14,16 +12,15 @@ DATA_DIR=~/data
 VOCAB_DIR=../gec-pseudodata/vocab
 PROCESSED_DIR=../process/$experiment
 MODEL_DIR=../model/$bert_type/$experiment
-LOG_DIR=../model/$bert_type/$experiment/logs
 
 pre_trained_model=../pretrained/ldc_giga.spell_error.pretrain.checkpoint_last.pt
 
-train_src=$DATA_DIR/dropna.1M.nocomment.src
-train_trg=$DATA_DIR/dropna.1M.comment.com
+train_src=$DATA_DIR/dropna.15M.nocomment.src
+train_trg=$DATA_DIR/dropna.15M.nocomment.trg
 valid_src=$DATA_DIR/dropna.1K.nocomment.src
-valid_trg=$DATA_DIR/dropna.1K.comment.com
+valid_trg=$DATA_DIR/dropna.1K.nocomment.trg
 test_src=$DATA_DIR/dropna.1K.nocomment.src
-test_trg=$DATA_DIR/dropna.1K.comment.com
+test_trg=$DATA_DIR/dropna.1K.nocomment.trg
 
 cpu_num=`grep -c ^processor /proc/cpuinfo`
 
@@ -58,13 +55,9 @@ fi
 
 mkdir -p $MODEL_DIR
 
-if [ ! -e "$MODEL_DIR/checkpoint_pretrain.pt" ]; then
-	echo "Copying pretrain file..."
-	cp $pre_trained_model $MODEL_DIR/checkpoint_pretrain.pt
-fi
+cp $pre_trained_model $MODEL_DIR/checkpoint_last.pt
 
-CUDA_VISIBLE_DEVICES=0,1 python3 -u $FAIRSEQ_DIR/train.py $PROCESSED_DIR/bin \
-    --tensorboard-logdir $LOG_DIR \
+CUDA_VISIBLE_DEVICES=0 python3 -u $FAIRSEQ_DIR/train.py $PROCESSED_DIR/bin \
     --save-dir $MODEL_DIR \
     --arch transformer_s2_vaswani_wmt_en_de_big \
     --max-tokens 4096 \
@@ -77,21 +70,20 @@ CUDA_VISIBLE_DEVICES=0,1 python3 -u $FAIRSEQ_DIR/train.py $PROCESSED_DIR/bin \
     --lr-shrink 0.7 \
     --min-lr 1e-06 \
     --warmup-from-nmt \
-    --warmup-nmt-file $checkpoint.pt \
+    --warmup-nmt-file checkpoint_last.pt \
     --bert-model-name $bert_model \
     --encoder-bert-dropout \
     --encoder-bert-dropout-ratio 0.3 \
     --clip-norm 1.0 \
     --criterion label_smoothed_cross_entropy \
     --label-smoothing 0.1 \
-    --max-epoch 6 \
+    --max-epoch $epochs \
     --adam-betas '(0.9,0.98)' \
     --log-format simple \
-    --save-interval-updates 1000 \
-    --seed $seed \
     --reset-lr-scheduler \
     --reset-optimizer \
     --reset-meters \
     --reset-dataloader \
-    --fp16
-
+    --save-interval-updates 5000 \
+    --fp16 \
+    --seed $seed

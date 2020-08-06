@@ -4,6 +4,7 @@ beam=5
 bert_type=bert-base-cased
 seed=2222
 checkpoint=$3
+output=$4
 
 SUBWORD_NMT=../subword
 FAIRSEQ_DIR=../bert-nmt
@@ -32,3 +33,4 @@ python3 -u ${FAIRSEQ_DIR}/interactive.py ${PROCESSED_DIR}/bin \
 
 cat $OUTPUT_DIR/test.nbest.tok | grep "^H"  | python3 -c "import sys; x = sys.stdin.readlines(); x = ' '.join([ x[i] for i in range(len(x)) if (i % ${beam} == 0) ]); print(x)" | cut -f3 > $OUTPUT_DIR/test.best.tok
 sed -i '$d' $OUTPUT_DIR/test.best.tok
+cp $OUTPUT_DIR/test.best.tok $output

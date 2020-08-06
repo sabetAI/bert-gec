@@ -4,7 +4,8 @@ bert_type=bert-base-cased
 seed=2222
 gec_model=../pseudo_model/ldc_giga.spell_error.pretrain.checkpoint_last.pt
 bert_model=../bert-base-cased
-experiment=annotate
+experiment=early
+n_epochs=1
 checkpoint=checkpoint_pretrain
 
 SUBWORD_NMT=../subword
@@ -18,12 +19,12 @@ LOG_DIR=../model/$bert_type/$experiment/logs
 
 pre_trained_model=../pretrained/ldc_giga.spell_error.pretrain.checkpoint_last.pt
 
-train_src=$DATA_DIR/dropna.1M.nocomment.src
-train_trg=$DATA_DIR/dropna.1M.comment.com
-valid_src=$DATA_DIR/dropna.1K.nocomment.src
-valid_trg=$DATA_DIR/dropna.1K.comment.com
-test_src=$DATA_DIR/dropna.1K.nocomment.src
-test_trg=$DATA_DIR/dropna.1K.comment.com
+train_src=$DATA_DIR/dropna.1M.src
+train_trg=$DATA_DIR/dropna.1M.trg
+valid_src=$DATA_DIR/dropna.1K.src
+valid_trg=$DATA_DIR/dropna.1K.trg
+test_src=$DATA_DIR/dropna.1K.src
+test_trg=$DATA_DIR/dropna.1K.trg
 
 cpu_num=`grep -c ^processor /proc/cpuinfo`
 
@@ -58,14 +59,11 @@ fi
 
 mkdir -p $MODEL_DIR
 
-if [ ! -e "$MODEL_DIR/checkpoint_pretrain.pt" ]; then
-	echo "Copying pretrain file..."
-	cp $pre_trained_model $MODEL_DIR/checkpoint_pretrain.pt
-fi
+cp $pre_trained_model $MODEL_DIR/checkpoint_pretrain.pt
 
-CUDA_VISIBLE_DEVICES=0,1 python3 -u $FAIRSEQ_DIR/train.py $PROCESSED_DIR/bin \
-    --tensorboard-logdir $LOG_DIR \
+CUDA_VISIBLE_DEVICES=0 python3 -u $FAIRSEQ_DIR/train.py $PROCESSED_DIR/bin \
     --save-dir $MODEL_DIR \
+    --tensorboard-logdir $LOG_DIR \
     --arch transformer_s2_vaswani_wmt_en_de_big \
     --max-tokens 4096 \
     --optimizer adam \
@@ -76,22 +74,21 @@ CUDA_VISIBLE_DEVICES=0,1 python3 -u $FAIRSEQ_DIR/train.py $PROCESSED_DIR/bin \
     --lr-scheduler reduce_lr_on_plateau \
     --lr-shrink 0.7 \
     --min-lr 1e-06 \
-    --warmup-from-nmt \
-    --warmup-nmt-file $checkpoint.pt \
+    --restore-file $checkpoint.pt \
     --bert-model-name $bert_model \
     --encoder-bert-dropout \
     --encoder-bert-dropout-ratio 0.3 \
     --clip-norm 1.0 \
     --criterion label_smoothed_cross_entropy \
     --label-smoothing 0.1 \
-    --max-epoch 6 \
+    --max-epoch $n_epochs \
     --adam-betas '(0.9,0.98)' \
     --log-format simple \
     --save-interval-updates 1000 \
+    --fp16 \
     --seed $seed \
     --reset-lr-scheduler \
     --reset-optimizer \
     --reset-meters \
-    --reset-dataloader \
-    --fp16
+    --reset-dataloader
 

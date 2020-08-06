@@ -4,7 +4,7 @@ bert_type=bert-base-cased
 seed=2222
 gec_model=../pseudo_model/ldc_giga.spell_error.pretrain.checkpoint_last.pt
 bert_model=../bert-base-cased
-experiment=annotate
+experiment=combined-15M
 checkpoint=checkpoint_pretrain
 
 SUBWORD_NMT=../subword
@@ -18,8 +18,8 @@ LOG_DIR=../model/$bert_type/$experiment/logs
 
 pre_trained_model=../pretrained/ldc_giga.spell_error.pretrain.checkpoint_last.pt
 
-train_src=$DATA_DIR/dropna.1M.nocomment.src
-train_trg=$DATA_DIR/dropna.1M.comment.com
+train_src=$DATA_DIR/dropna.15M.combined
+train_trg=$DATA_DIR/dropna.15M.nocomment.com
 valid_src=$DATA_DIR/dropna.1K.nocomment.src
 valid_trg=$DATA_DIR/dropna.1K.comment.com
 test_src=$DATA_DIR/dropna.1K.nocomment.src
@@ -87,7 +87,7 @@ CUDA_VISIBLE_DEVICES=0,1 python3 -u $FAIRSEQ_DIR/train.py $PROCESSED_DIR/bin \
     --max-epoch 6 \
     --adam-betas '(0.9,0.98)' \
     --log-format simple \
-    --save-interval-updates 1000 \
+    --save-interval-updates 10000 \
     --seed $seed \
     --reset-lr-scheduler \
     --reset-optimizer \

@@ -1,14 +1,25 @@
 ERRANT_DIR=~/errant/errant/commands
-DATA_DIR=~/data
 EVAL_FILE=$1
-REF_SRC=$DATA_DIR/$EVAL_FILE.src
-REF_TRG=$DATA_DIR/$EVAL_FILE.trg
+SRC=$EVAL_FILE
+TRG=${EVAL_FILE%src}trg
+HYP=${EVAL_FILE%src}pred
+HYP_M2=$HYP.m2
+REF_M2=${EVAL_FILE%src}ref.m2
 EXPERIMENT=$2
 CHECKPOINT=$3
-OUTPUT_DIR=~/bert-gec/model/bert-base-cased/$EXPERIMENT/output/$CHECKPOINT
+OUT=${EVAL_FILE%src}score
+echo $SRC
+echo $TRG
+echo $HYP
+echo $HYP_M2
+echo $REF_M2
+echo $REF_M2
+echo $OUT
 
-python3 $ERRANT_DIR/parallel_to_m2.py -orig $REF_SRC -cor $OUTPUT_DIR/test.best.tok -out $OUTPUT_DIR/test.best.m2 -tok
-python3 $ERRANT_DIR/parallel_to_m2.py -orig $REF_SRC -cor $REF_TRG -out $OUTPUT_DIR/$EVAL_FILE.m2 -tok
-python3 $ERRANT_DIR/compare_m2.py -ref $OUTPUT_DIR/$EVAL_FILE.m2 -hyp $OUTPUT_DIR/test.best.m2 -v > $OUTPUT_DIR/test.best.score
+python3 $ERRANT_DIR/parallel_to_m2.py -orig $SRC -cor $HYP -out $HYP_M2 -tok
+python3 $ERRANT_DIR/parallel_to_m2.py -orig $SRC -cor $TRG -out $REF_M2 -tok
+python3 $ERRANT_DIR/compare_m2.py -ref $REF_M2 -hyp $HYP_M2 -v > $OUT
 
-tail -6 $OUTPUT_DIR/test.best.score
+## echo $EVAL_FILE
+## wc -l $EVAL_FILE
+tail -6 $OUT

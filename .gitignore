@@ -136,3 +136,5 @@ gec-pseudodata/
 pseudo_model/
 pretrained/
 bert-env/
+scripts/*.sh.sw*
+scripts/*.sh.sw*

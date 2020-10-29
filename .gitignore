@@ -135,3 +135,4 @@ data/
 gec-pseudodata/
 pseudo_model/
 pretrained/
+bert-env/

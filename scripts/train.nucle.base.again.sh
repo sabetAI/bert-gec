@@ -4,27 +4,28 @@ bert_type=bert-base-cased
 seed=2222
 gec_model=../pseudo_model/ldc_giga.spell_error.pretrain.checkpoint_last.pt
 bert_model=../bert-base-cased
-experiment=comment-and-context
+experiment=nucle-base-again
 checkpoint=checkpoint_pretrain
-n_epochs=6
+epochs=5
+save_interval=10000
 
 SUBWORD_NMT=../subword
 FAIRSEQ_DIR=../bert-nmt
 BPE_MODEL_DIR=../gec-pseudodata/bpe
-DATA_DIR=~/data
+DATA_DIR=~/gec-data/nucle3.3/data
 VOCAB_DIR=../gec-pseudodata/vocab
-PROCESSED_DIR=../process/comment-and-context
+PROCESSED_DIR=../process/$experiment
 MODEL_DIR=../model/$bert_type/$experiment
 LOG_DIR=../model/$bert_type/$experiment/logs
 
 pre_trained_model=../pretrained/ldc_giga.spell_error.pretrain.checkpoint_last.pt
 
-train_src=$DATA_DIR/train.1M.com.cxt.src
-train_trg=$DATA_DIR/train.1M.com.cxt.trg
-valid_src=$DATA_DIR/dropna.1K.src
-valid_trg=$DATA_DIR/dropna.1K.trg
-test_src=$DATA_DIR/dropna.1K.src
-test_trg=$DATA_DIR/dropna.1K.trg
+train_src=$DATA_DIR/conll14st-preprocessed.55K.src
+train_trg=$DATA_DIR/conll14st-preprocessed.55K.trg
+valid_src=$DATA_DIR/conll14st-preprocessed.valid.src
+valid_trg=$DATA_DIR/conll14st-preprocessed.valid.trg
+test_src=$DATA_DIR/conll14st-preprocessed.valid.src
+test_trg=$DATA_DIR/conll14st-preprocessed.valid.trg
 
 cpu_num=`grep -c ^processor /proc/cpuinfo`
 
@@ -85,13 +86,13 @@ CUDA_VISIBLE_DEVICES=0,1 python3 -u $FAIRSEQ_DIR/train.py $PROCESSED_DIR/bin \
     --clip-norm 1.0 \
     --criterion label_smoothed_cross_entropy \
     --label-smoothing 0.1 \
-    --max-epoch $n_epochs \
+    --max-epoch $epochs \
     --adam-betas '(0.9,0.98)' \
     --log-format simple \
-    --save-interval-updates 10000 \
+    --save-interval-updates $save_interval \
     --fp16 \
     --seed $seed \
     --reset-lr-scheduler \
     --reset-optimizer \
     --reset-meters \
-    --reset-dataloader \
+    --reset-dataloader

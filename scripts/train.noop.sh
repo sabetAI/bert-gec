@@ -4,13 +4,15 @@ bert_type=bert-base-cased
 seed=2222
 gec_model=../pseudo_model/ldc_giga.spell_error.pretrain.checkpoint_last.pt
 bert_model=../bert-base-cased
-experiment=diff
+experiment=noop
 checkpoint=checkpoint_pretrain
+epochs=20
+save_interval=10000
 
 SUBWORD_NMT=../subword
 FAIRSEQ_DIR=../bert-nmt
 BPE_MODEL_DIR=../gec-pseudodata/bpe
-DATA_DIR=~/data
+DATA_DIR=~/ctok_classifier/output
 VOCAB_DIR=../gec-pseudodata/vocab
 PROCESSED_DIR=../process/$experiment
 MODEL_DIR=../model/$bert_type/$experiment
@@ -18,12 +20,12 @@ LOG_DIR=../model/$bert_type/$experiment/logs
 
 pre_trained_model=../pretrained/ldc_giga.spell_error.pretrain.checkpoint_last.pt
 
-train_src=$DATA_DIR/dropna.diff
-train_trg=$DATA_DIR/dropna.com
-valid_src=$DATA_DIR/dropna.1K.nocomment.src
-valid_trg=$DATA_DIR/dropna.1K.comment.com
-test_src=$DATA_DIR/dropna.1K.nocomment.src
-test_trg=$DATA_DIR/dropna.1K.comment.com
+train_src=$DATA_DIR/bea19.blimp.train.ctrl.simp.noop.src
+train_trg=$DATA_DIR/bea19.blimp.train.trg
+valid_src=$DATA_DIR/official-2014.combined.noop.src
+valid_trg=$DATA_DIR/official-2014.combined.trg
+test_src=$DATA_DIR/official-2014.combined.noop.src
+test_trg=$DATA_DIR/official-2014.combined.trg
 
 cpu_num=`grep -c ^processor /proc/cpuinfo`
 
@@ -84,13 +86,13 @@ CUDA_VISIBLE_DEVICES=0,1 python3 -u $FAIRSEQ_DIR/train.py $PROCESSED_DIR/bin \
     --clip-norm 1.0 \
     --criterion label_smoothed_cross_entropy \
     --label-smoothing 0.1 \
-    --max-epoch 6 \
+    --max-epoch $epochs \
     --adam-betas '(0.9,0.98)' \
     --log-format simple \
-    --save-interval-updates 10000 \
+    --save-interval-updates $save_interval \
+    --fp16 \
     --seed $seed \
     --reset-lr-scheduler \
     --reset-optimizer \
     --reset-meters \
-    --reset-dataloader \
-    --fp16
+    --reset-dataloader

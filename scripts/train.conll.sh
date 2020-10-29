@@ -4,14 +4,15 @@ bert_type=bert-base-cased
 seed=2222
 gec_model=../pseudo_model/ldc_giga.spell_error.pretrain.checkpoint_last.pt
 bert_model=../bert-base-cased
-experiment=early
+experiment=conll
 checkpoint=checkpoint_pretrain
-epochs=1
+epochs=5
+save_interval=10000
 
 SUBWORD_NMT=../subword
 FAIRSEQ_DIR=../bert-nmt
 BPE_MODEL_DIR=../gec-pseudodata/bpe
-DATA_DIR=~/data
+DATA_DIR=~/gec-data/merged
 VOCAB_DIR=../gec-pseudodata/vocab
 PROCESSED_DIR=../process/$experiment
 MODEL_DIR=../model/$bert_type/$experiment
@@ -19,12 +20,12 @@ LOG_DIR=../model/$bert_type/$experiment/logs
 
 pre_trained_model=../pretrained/ldc_giga.spell_error.pretrain.checkpoint_last.pt
 
-train_src=$DATA_DIR/dropna.1M.src
-train_trg=$DATA_DIR/dropna.1M.trg
-valid_src=$DATA_DIR/dropna.1K.src
-valid_trg=$DATA_DIR/dropna.1K.trg
-test_src=$DATA_DIR/dropna.1K.src
-test_trg=$DATA_DIR/dropna.1K.trg
+train_src=$DATA_DIR/conll.train.src
+train_trg=$DATA_DIR/conll.train.trg
+valid_src=$DATA_DIR/valid.src
+valid_trg=$DATA_DIR/valid.trg
+test_src=$DATA_DIR/valid.src
+test_trg=$DATA_DIR/valid.trg
 
 cpu_num=`grep -c ^processor /proc/cpuinfo`
 
@@ -88,10 +89,10 @@ CUDA_VISIBLE_DEVICES=0,1 python3 -u $FAIRSEQ_DIR/train.py $PROCESSED_DIR/bin \
     --max-epoch $epochs \
     --adam-betas '(0.9,0.98)' \
     --log-format simple \
-    --save-interval-updates 500 \
+    --save-interval-updates $save_interval \
     --fp16 \
     --seed $seed \
     --reset-lr-scheduler \
     --reset-optimizer \
     --reset-meters \
-    --reset-dataloader \
+    --reset-dataloader

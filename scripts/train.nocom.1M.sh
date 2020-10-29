@@ -1,26 +1,31 @@
+#!/bin/bash
+
 bert_type=bert-base-cased
 seed=2222
 gec_model=../pseudo_model/ldc_giga.spell_error.pretrain.checkpoint_last.pt
 bert_model=../bert-base-cased
-experiment=nocomment
+experiment=nocom-1M
+checkpoint=checkpoint_pretrain
 epochs=5
+save_interval=10000
 
 SUBWORD_NMT=../subword
 FAIRSEQ_DIR=../bert-nmt
 BPE_MODEL_DIR=../gec-pseudodata/bpe
-DATA_DIR=~/data
+DATA_DIR=~/nocom-data
 VOCAB_DIR=../gec-pseudodata/vocab
 PROCESSED_DIR=../process/$experiment
 MODEL_DIR=../model/$bert_type/$experiment
+LOG_DIR=../model/$bert_type/$experiment/logs
 
 pre_trained_model=../pretrained/ldc_giga.spell_error.pretrain.checkpoint_last.pt
 
-train_src=$DATA_DIR/dropna.15M.nocomment.src
-train_trg=$DATA_DIR/dropna.15M.nocomment.trg
-valid_src=$DATA_DIR/dropna.1K.nocomment.src
-valid_trg=$DATA_DIR/dropna.1K.nocomment.trg
-test_src=$DATA_DIR/dropna.1K.nocomment.src
-test_trg=$DATA_DIR/dropna.1K.nocomment.trg
+train_src=$DATA_DIR/nocom.1M.src
+train_trg=$DATA_DIR/nocom.1M.trg
+valid_src=$DATA_DIR/valid.src
+valid_trg=$DATA_DIR/valid.trg
+test_src=$DATA_DIR/valid.src
+test_trg=$DATA_DIR/valid.trg
 
 cpu_num=`grep -c ^processor /proc/cpuinfo`
 
@@ -55,9 +60,13 @@ fi
 
 mkdir -p $MODEL_DIR
 
-cp $pre_trained_model $MODEL_DIR/checkpoint_last.pt
+if [ ! -e "$MODEL_DIR/checkpoint_pretrain.pt" ]; then
+	echo "Copying pretrain file..."
+	cp $pre_trained_model $MODEL_DIR/checkpoint_pretrain.pt
+fi
 
-CUDA_VISIBLE_DEVICES=0 python3 -u $FAIRSEQ_DIR/train.py $PROCESSED_DIR/bin \
+CUDA_VISIBLE_DEVICES=0,1 python3 -u $FAIRSEQ_DIR/train.py $PROCESSED_DIR/bin \
+    --tensorboard-logdir $LOG_DIR \
     --save-dir $MODEL_DIR \
     --arch transformer_s2_vaswani_wmt_en_de_big \
     --max-tokens 4096 \
@@ -70,7 +79,7 @@ CUDA_VISIBLE_DEVICES=0 python3 -u $FAIRSEQ_DIR/train.py $PROCESSED_DIR/bin \
     --lr-shrink 0.7 \
     --min-lr 1e-06 \
     --warmup-from-nmt \
-    --warmup-nmt-file checkpoint_last.pt \
+    --warmup-nmt-file $checkpoint.pt \
     --bert-model-name $bert_model \
     --encoder-bert-dropout \
     --encoder-bert-dropout-ratio 0.3 \
@@ -80,10 +89,11 @@ CUDA_VISIBLE_DEVICES=0 python3 -u $FAIRSEQ_DIR/train.py $PROCESSED_DIR/bin \
     --max-epoch $epochs \
     --adam-betas '(0.9,0.98)' \
     --log-format simple \
+    --save-interval-updates $save_interval \
+    --fp16 \
+    --seed $seed \
     --reset-lr-scheduler \
     --reset-optimizer \
     --reset-meters \
-    --reset-dataloader \
-    --save-interval-updates 5000 \
-    --fp16 \
-    --seed $seed
+    --reset-dataloader
+
